@@ -1,11 +1,14 @@
+#pragma once
+
 #include <algorithm>
 #include <utility>
-#ifndef BSTMAP_H
-#include "bst-map.h"
+
+#ifndef AVLMAP_H
+#include "avl-map.h"
 #endif
 
-#ifndef BSTMAP_CPP
-#define BSTMAP_CPP
+#ifndef AVLMAP_CPP
+#define AVLMAP_CPP
 
 #include <iostream>
 
@@ -13,17 +16,17 @@ namespace CS280 {
 
   // static data members
   template<typename K, typename V>
-  const typename BSTmap<K, V>::iterator BSTmap<K, V>::end_it{
+  const typename AVLmap<K, V>::iterator AVLmap<K, V>::end_it{
     nullptr,
   };
 
   template<typename K, typename V>
-  const typename BSTmap<K, V>::const_iterator BSTmap<K, V>::const_end_it{
+  const typename AVLmap<K, V>::const_iterator AVLmap<K, V>::const_end_it{
     nullptr,
   };
 
   template<typename K, typename V>
-  BSTmap<K, V>::Node::Node(
+  AVLmap<K, V>::Node::Node(
     K key,
     V value,
     Node* parent,
@@ -41,13 +44,13 @@ namespace CS280 {
       right{right} {}
 
   template<typename K, typename V>
-  BSTmap<K, V>::Node::~Node() {
+  AVLmap<K, V>::Node::~Node() {
     delete left;
     delete right;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::clone() const -> Node* {
+  auto AVLmap<K, V>::Node::clone() const -> Node* {
     return new Node{
       key,
       value,
@@ -60,17 +63,17 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  const K& BSTmap<K, V>::Node::Key() const {
+  const K& AVLmap<K, V>::Node::Key() const {
     return key;
   }
 
   template<typename K, typename V>
-  V& BSTmap<K, V>::Node::Value() {
+  V& AVLmap<K, V>::Node::Value() {
     return value;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::first() -> Node* {
+  auto AVLmap<K, V>::Node::first() -> Node* {
     Node* node = this;
 
     while (node->left) {
@@ -81,7 +84,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::last() -> Node* {
+  auto AVLmap<K, V>::Node::last() -> Node* {
     Node* node = this;
 
     while (node->right) {
@@ -92,7 +95,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::successor() -> Node* {
+  auto AVLmap<K, V>::Node::successor() -> Node* {
     if (right != nullptr) {
       return right->first();
     }
@@ -109,7 +112,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::decrement() -> Node* {
+  auto AVLmap<K, V>::Node::decrement() -> Node* {
     if (left) {
       return left->last();
     }
@@ -125,24 +128,27 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::recalc_height() -> void {
+  auto AVLmap<K, V>::Node::refresh_balance_and_height() -> void {
     height = 0;
+    balance = 0;
 
     if (left) {
       height = left->height + 1;
+      balance = left->balance;
     }
 
     if (right) {
       height = std::max(height, right->height + 1);
+      balance -= right->balance;
     }
 
     if (parent) {
-      parent->recalc_height();
+      parent->refresh_balance_and_height();
     }
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::add_child(K key, V value) -> Node& {
+  auto AVLmap<K, V>::Node::add_child(K key, V value) -> Node& {
     Node* node = new Node{
       std::move(key),
       std::move(value),
@@ -159,21 +165,21 @@ namespace CS280 {
       right = node;
     }
 
-    node->recalc_height();
+    node->refresh_balance_and_height();
 
     return *node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::Node::print(std::ostream& os) const -> void {
+  auto AVLmap<K, V>::Node::print(std::ostream& os) const -> void {
     os << value;
   }
 
   template<typename K, typename V>
-  BSTmap<K, V>::iterator::iterator(Node* node): node{node} {}
+  AVLmap<K, V>::iterator::iterator(Node* node): node{node} {}
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator++() -> iterator& {
+  auto AVLmap<K, V>::iterator::operator++() -> iterator& {
     if (node == nullptr) {
       return *this;
     }
@@ -184,37 +190,37 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator++(int) -> iterator {
+  auto AVLmap<K, V>::iterator::operator++(int) -> iterator {
     iterator iter{*this};
     operator++();
     return iter;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator*() const -> Node& {
+  auto AVLmap<K, V>::iterator::operator*() const -> Node& {
     return *node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator->() const -> Node* {
+  auto AVLmap<K, V>::iterator::operator->() const -> Node* {
     return node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator!=(const iterator& rhs) const -> bool {
+  auto AVLmap<K, V>::iterator::operator!=(const iterator& rhs) const -> bool {
     return node != rhs.node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::iterator::operator==(const iterator& rhs) const -> bool {
+  auto AVLmap<K, V>::iterator::operator==(const iterator& rhs) const -> bool {
     return node == rhs.node;
   }
 
   template<typename K, typename V>
-  BSTmap<K, V>::const_iterator::const_iterator(Node* p): node{p} {}
+  AVLmap<K, V>::const_iterator::const_iterator(Node* p): node{p} {}
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator++() -> const_iterator& {
+  auto AVLmap<K, V>::const_iterator::operator++() -> const_iterator& {
     if (node == nullptr) {
       return *this;
     }
@@ -225,41 +231,41 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator++(int) -> const_iterator {
+  auto AVLmap<K, V>::const_iterator::operator++(int) -> const_iterator {
     const_iterator iter{*this};
     operator++();
     return iter;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator*() const -> const Node& {
+  auto AVLmap<K, V>::const_iterator::operator*() const -> const Node& {
     return *node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator->() const -> const Node* {
+  auto AVLmap<K, V>::const_iterator::operator->() const -> const Node* {
     return node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator!=( //
+  auto AVLmap<K, V>::const_iterator::operator!=( //
     const const_iterator& rhs
   ) const -> bool {
     return node != rhs.node;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::const_iterator::operator==( //
+  auto AVLmap<K, V>::const_iterator::operator==( //
     const const_iterator& rhs
   ) const -> bool {
     return node == rhs.node;
   }
 
   template<typename K, typename V>
-  BSTmap<K, V>::BSTmap(): root{nullptr}, count{0} {}
+  AVLmap<K, V>::AVLmap(): root{nullptr}, count{0} {}
 
   template<typename K, typename V>
-  BSTmap<K, V>& BSTmap<K, V>::operator=(const BSTmap& rhs) {
+  AVLmap<K, V>& AVLmap<K, V>::operator=(const AVLmap& rhs) {
     if (&rhs == this) {
       return *this;
     }
@@ -273,7 +279,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  BSTmap<K, V>& BSTmap<K, V>::operator=(BSTmap&& from) {
+  AVLmap<K, V>& AVLmap<K, V>::operator=(AVLmap&& from) {
     delete root;
 
     count = std::exchange(from.count, 0);
@@ -283,17 +289,17 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::size() -> usize {
+  auto AVLmap<K, V>::size() -> usize {
     return count;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::empty() -> bool {
+  auto AVLmap<K, V>::empty() -> bool {
     return count == 0;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::operator[](const K& key) -> V& {
+  auto AVLmap<K, V>::operator[](const K& key) -> V& {
     if (empty()) {
       root = new Node{
         key,     // key
@@ -320,7 +326,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::index(Node* node, const K& key) const -> Node* {
+  auto AVLmap<K, V>::index(Node* node, const K& key) const -> Node* {
     if (node == nullptr) {
       return nullptr;
     }
@@ -351,19 +357,19 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::end() -> iterator {
+  auto AVLmap<K, V>::end() -> iterator {
     return end_it;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::find(const K& key) -> iterator {
+  auto AVLmap<K, V>::find(const K& key) -> iterator {
     Node* node = index(root, key);
 
     return (node and node->key == key) ? iterator{node} : end();
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::erase(iterator it) -> void {
+  auto AVLmap<K, V>::erase(iterator it) -> void {
     if (it == end()) {
       return;
     }
@@ -408,7 +414,7 @@ namespace CS280 {
       } else {
         other_parent->right = other;
       }
-      other->recalc_height();
+      other->refresh_balance_and_height();
 
       return;
     }
@@ -423,7 +429,7 @@ namespace CS280 {
     delete to_erase;
 
     if (left == nullptr and right == nullptr) {
-      parent->recalc_height();
+      parent->refresh_balance_and_height();
       return;
     }
 
@@ -435,7 +441,7 @@ namespace CS280 {
       } else {
         left_parent->right = left;
       }
-      left->recalc_height();
+      left->refresh_balance_and_height();
     }
 
     if (right) {
@@ -447,50 +453,50 @@ namespace CS280 {
         right_parent->right = right;
       }
 
-      right->recalc_height();
+      right->refresh_balance_and_height();
     }
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::begin() const -> const_iterator {
+  auto AVLmap<K, V>::begin() const -> const_iterator {
     return root ? const_iterator{root->first()} : end();
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::end() const -> const_iterator {
+  auto AVLmap<K, V>::end() const -> const_iterator {
     return end_it;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::find(const K& key) const -> const_iterator {
+  auto AVLmap<K, V>::find(const K& key) const -> const_iterator {
     Node* node = index(root, key);
     return (node and node->key == key) ? iterator{node} : end();
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::sanityCheck() -> bool {
+  auto AVLmap<K, V>::sanityCheck() -> bool {
     return true;
   }
 
   template<typename K, typename V>
-  BSTmap<K, V>::BSTmap(const BSTmap& rhs):
+  AVLmap<K, V>::AVLmap(const AVLmap& rhs):
       root{
         rhs.root ? rhs.root->clone() : nullptr,
       },
       count{rhs.count} {}
 
   template<typename K, typename V>
-  BSTmap<K, V>::BSTmap(BSTmap&& from):
+  AVLmap<K, V>::AVLmap(AVLmap&& from):
       root{std::exchange(from.root, nullptr)},
       count{std::exchange(from.count, 0)} {}
 
   template<typename K, typename V>
-  BSTmap<K, V>::~BSTmap() {
+  AVLmap<K, V>::~AVLmap() {
     delete root;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::begin() -> iterator {
+  auto AVLmap<K, V>::begin() -> iterator {
     return root ? iterator{root->first()} : end();
   }
 
@@ -500,7 +506,7 @@ namespace CS280 {
    * used in print_backwards_padded
    */
   template<typename K, typename V>
-  auto BSTmap<K, V>::getedgesymbol(const Node* node) const -> char {
+  auto AVLmap<K, V>::getedgesymbol(const Node* node) const -> char {
     const Node* parent = node->parent;
 
     if (parent == nullptr) {
@@ -515,15 +521,15 @@ namespace CS280 {
    * Left branch of the tree is at the bottom
    */
   template<typename K, typename V>
-  auto operator<<(std::ostream& os, const BSTmap<K, V>& map) -> std::ostream& {
+  auto operator<<(std::ostream& os, const AVLmap<K, V>& map) -> std::ostream& {
     map.print(os);
     return os;
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::print(std::ostream& os, bool print_value) const -> void {
+  auto AVLmap<K, V>::print(std::ostream& os, bool print_value) const -> void {
     if (root) {
-      BSTmap<K, V>::Node* b = root->last();
+      AVLmap<K, V>::Node* b = root->last();
       while (b) {
         int depth = getdepth(*b);
         int i;
@@ -577,7 +583,7 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
-  auto BSTmap<K, V>::getdepth(const Node& node) const -> usize {
+  auto AVLmap<K, V>::getdepth(const Node& node) const -> usize {
     return root->height - node.height;
   }
 } // namespace CS280

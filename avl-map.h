@@ -1,5 +1,7 @@
-#ifndef BSTMAP_H
-#define BSTMAP_H
+#pragma once
+
+#ifndef AVLMAP_H
+#define AVLMAP_H
 
 /**
  * @brief 32 Bit Floating Point Number
@@ -85,7 +87,7 @@ namespace CS280 {
    * @tparam V Value
    */
   template<typename K, typename V>
-  class BSTmap {
+  class AVLmap {
 
   public:
 
@@ -120,35 +122,44 @@ namespace CS280 {
       auto operator=(const Node&) -> Node& = delete;
 
       /**
+       * @brief No Move constructor
+       */
+      Node(Node&&) = delete;
+
+      /**
+       * @brief No move assignment
+       */
+      auto operator=(Node&&) -> Node& = delete;
+
+      /**
        * @brief Gets the key stored
        */
-      auto Key() const -> const K&; // return a const reference
+      [[nodiscard]] auto Key() const -> const K&;
 
       /**
        * @brief Gets the value stored
        */
-      auto Value() -> V&; // return a reference
+      [[nodiscard]] auto Value() -> V&;
 
       /**
        * @brief Gets the leftmost node
        */
-      [[nodiscard]] auto first()
-        -> Node*; // minimum - follow left as far as possible
+      [[nodiscard]] auto first() -> Node*;
 
       /**
        * @brief Gets the rightmost node
        */
-      auto last() -> Node*; // maximum - follow right as far as possible
+      [[nodiscard]] auto last() -> Node*;
 
       /**
        * @brief Gets the successor node
        */
-      auto successor() -> Node*; // successor
+      [[nodiscard]] auto successor() -> Node*;
 
       /**
        * @brief Gets the predecessor Node
        */
-      auto decrement() -> Node*; // predecessor
+      [[nodiscard]] auto decrement() -> Node*;
 
       /**
        * @brief Prints to stream
@@ -160,17 +171,17 @@ namespace CS280 {
       /**
        * @brief Clones a new node on the heap
        */
-      auto clone() const -> Node*;
+      [[nodiscard]] auto clone() const -> Node*;
 
       /**
        * @brief Creates & adds a child with the given key and value
        */
-      auto add_child(K key, V value) -> Node&;
+      [[nodiscard]] auto add_child(K key, V value) -> Node&;
 
       /**
-       * @brief Recomputes the height (recurses up)
+       * @brief Recomputes the height and balance (recurses up)
        */
-      auto recalc_height() -> void;
+      auto refresh_balance_and_height() -> void;
 
       /**
        * @brief Key data
@@ -207,7 +218,7 @@ namespace CS280 {
        */
       Node* right{nullptr};
 
-      friend class BSTmap;
+      friend class AVLmap;
     };
 
     /**
@@ -241,7 +252,7 @@ namespace CS280 {
       /**
        * @brief Gets the inner node
        */
-      auto operator->() const -> Node*;
+      [[nodiscard]] auto operator->() const -> Node*;
 
       /**
        * @brief Checks if this and another iterator are not equal
@@ -253,7 +264,7 @@ namespace CS280 {
        */
       [[nodiscard]] auto operator==(const iterator& rhs) const -> bool;
 
-      friend class BSTmap;
+      friend class AVLmap;
 
     private:
 
@@ -285,24 +296,24 @@ namespace CS280 {
       /**
        * @brief Gets a refereence to the inner node
        */
-      auto operator*() const -> const Node&;
+      [[nodiscard]] auto operator*() const -> const Node&;
 
       /**
        * @brief Gets the inner node
        */
-      auto operator->() const -> const Node*;
+      [[nodiscard]] auto operator->() const -> const Node*;
 
       /**
        * @brief Checks if this and another iter is not equal
        */
-      auto operator!=(const const_iterator& rhs) const -> bool;
+      [[nodiscard]] auto operator!=(const const_iterator& rhs) const -> bool;
 
       /**
        * @brief Checks if this and another iter is equal
        */
-      auto operator==(const const_iterator& rhs) const -> bool;
+      [[nodiscard]] auto operator==(const const_iterator& rhs) const -> bool;
 
-      friend class BSTmap;
+      friend class AVLmap;
 
     private:
 
@@ -325,38 +336,38 @@ namespace CS280 {
     /**
      * @brief Default constructor
      */
-    BSTmap();
+    AVLmap();
 
     /**
      * @brief Copy constructor
      *
      * @param rhs
      */
-    BSTmap(const BSTmap& rhs);
+    AVLmap(const AVLmap& rhs);
 
     /**
      * @brief Move constructor
      *
      * @param from
      */
-    BSTmap(BSTmap&& from);
+    AVLmap(AVLmap&& from);
 
     /**
      * @brief Copy assignment
      */
-    auto operator=(const BSTmap& rhs) -> BSTmap&;
+    auto operator=(const AVLmap& rhs) -> AVLmap&;
 
     /**
      * @brief Move assignment
      *
      * @param rhs
      */
-    auto operator=(BSTmap&& rhs) -> BSTmap&;
+    auto operator=(AVLmap&& rhs) -> AVLmap&;
 
     /**
      * @brief Destructor
      */
-    virtual ~BSTmap();
+    virtual ~AVLmap();
 
     /**
      * @brief How many elements are in the tree
@@ -440,6 +451,8 @@ namespace CS280 {
      */
     auto index(Node* node, const K& key) const -> Node*;
 
+    auto balanced_index(Node* node, const K& key) const -> Node*;
+
     /**
      * @brief Root of the tree
      */
@@ -455,10 +468,10 @@ namespace CS280 {
    * @brief Prints out the bst map to the stream
    */
   template<typename K, typename V>
-  auto operator<<(std::ostream& os, const BSTmap<K, V>& map) -> std::ostream&;
+  auto operator<<(std::ostream& os, const AVLmap<K, V>& map) -> std::ostream&;
 } // namespace CS280
 
-#ifndef BSTMAP_CPP
-#include "bst-map.cpp"
+#ifndef AVLMAP_CPP
+#include "avl-map.cpp"
 #endif
 #endif
