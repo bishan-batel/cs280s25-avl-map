@@ -96,7 +96,7 @@ namespace CS280 {
 
   template<typename K, typename V>
   auto AVLmap<K, V>::Node::successor() -> Node* {
-    if (right != nullptr) {
+    if (right) {
       return right->first();
     }
 
@@ -125,6 +125,27 @@ namespace CS280 {
     Node* predecessor = current->parent;
 
     return (predecessor and predecessor->key == key) ? nullptr : predecessor;
+  }
+
+  template<typename K, typename V>
+  AVLmap<K, V>::Node::Node(Node&& from):
+      key{std::move(from.key)},
+      value{std::move(from.value)},
+      height{std::exchange(from.height, 0)},
+      balance{std::exchange(from.balance, 0)},
+      left{std::exchange(from.left, nullptr)},
+      right{std::exchange(from.right, nullptr)} {}
+
+  template<typename K, typename V>
+  auto AVLmap<K, V>::Node::operator=(Node&& from) -> Node& {
+    key = std::move(from.key);
+    value = std::move(from.value);
+    height = std::exchange(from.height, 0);
+    balance = std::exchange(from.balance, 0);
+    left = std::exchange(from.left, nullptr);
+    right = std::exchange(from.right, nullptr);
+
+    return *this;
   }
 
   template<typename K, typename V>
@@ -357,6 +378,37 @@ namespace CS280 {
   }
 
   template<typename K, typename V>
+  auto AVLmap<K, V>::balanced_index(Node* node, const K& key) const -> Node* {
+    if (node == nullptr) {
+      return nullptr;
+    }
+
+    if (node->key == key) {
+      return node;
+    }
+
+    // if on left
+    if (key < node->key) {
+
+      // if no left, return parent
+      if (node->left) {
+        return index(node->left, key);
+      }
+
+      return node;
+    }
+
+    // if on right
+
+    // if right is none, reutnr parent
+    if (node->right) {
+      return index(node->right, key);
+    }
+
+    return node;
+  }
+
+  template<typename K, typename V>
   auto AVLmap<K, V>::end() -> iterator {
     return end_it;
   }
@@ -476,6 +528,35 @@ namespace CS280 {
   template<typename K, typename V>
   auto AVLmap<K, V>::sanityCheck() -> bool {
     return true;
+  }
+
+  template<typename K, typename V>
+  auto AVLmap<K, V>::rotate_left(Node* node) -> Node* {
+    Node*& tree = node_ref(*node);
+    Node* const temp = tree;
+    tree = tree->right;
+    temp->right = tree->left;
+    tree->left = temp;
+  }
+
+  template<typename K, typename V>
+  auto AVLmap<K, V>::rotate_right(Node* node) -> Node* {
+    Node*& tree = node_ref(*node);
+    Node* const temp = tree;
+    tree = tree->left;
+    temp->left = tree->right;
+    tree->right = temp;
+  }
+
+  template<typename K, typename V>
+  [[nodiscard]] auto AVLmap<K, V>::node_ref(Node& node) -> Node*& {
+    Node* parent = node.parent;
+
+    if (parent == nullptr) {
+      return root;
+    }
+
+    return (parent->left == &node) ? parent->left : parent->right;
   }
 
   template<typename K, typename V>

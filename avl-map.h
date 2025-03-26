@@ -122,14 +122,14 @@ namespace CS280 {
       auto operator=(const Node&) -> Node& = delete;
 
       /**
-       * @brief No Move constructor
+       * @brief  Move constructor
        */
-      Node(Node&&) = delete;
+      Node(Node&&);
 
       /**
-       * @brief No move assignment
+       * @brief move assignment
        */
-      auto operator=(Node&&) -> Node& = delete;
+      auto operator=(Node&& from) -> Node&;
 
       /**
        * @brief Gets the key stored
@@ -452,6 +452,12 @@ namespace CS280 {
     auto index(Node* node, const K& key) const -> Node*;
 
     auto balanced_index(Node* node, const K& key) const -> Node*;
+
+    auto rotate_right(Node* node) -> Node*;
+
+    auto rotate_left(Node* node) -> Node*;
+
+    [[nodiscard]] auto node_ref(Node& node) -> Node*&;
 
     /**
      * @brief Root of the tree
